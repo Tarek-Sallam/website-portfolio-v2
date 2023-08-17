@@ -1,5 +1,5 @@
 <script>
-    import ThreeApp from '$lib/ThreeApp.svelte';
+	import ThreeApp from '$lib/ThreeApp.svelte';
 </script>
 
 <ThreeApp />
