@@ -1,0 +1,36 @@
+.name-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+}
+
+.name-wrapper {
+    display: grid;
+}
+
+.first-name {
+    transform: translate(0%, -100%);
+}
+
+p {
+    line-height: 0.8;
+    user-select: none;
+    position: fixed;
+    font-size: 7rem;
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.overlay {
+    color: white;
+    mix-blend-mode: overlay;
+}
+
+.outline {
+    color: black;
+    mix-blend-mode: difference;
+    -webkit-text-stroke: 0.01em white;
+}

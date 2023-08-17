@@ -1,4 +1,5 @@
 <script>
+	import '../css/ThreeApp.css';
 	import * as THREE from 'three';
 	import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 	import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -7,8 +8,8 @@
 	import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 	import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 	import { onMount } from 'svelte';
-	import vertexShader from './three/shaders/vertex.glsl';
-	import fragmentShader from './three/shaders/fragment.glsl';
+	import vertexShader from './shaders/vertex.glsl';
+	import fragmentShader from './shaders/fragment.glsl';
 	import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 	let container;
@@ -142,5 +143,5 @@
 	});
 </script>
 
-<div bind:this={container} />
+<div class="canvas-container" bind:this={container} />
 <svelte:window on:mousemove={handleMouseMove} />
