@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import './css/AnimatedName.css';
+	import { gsap } from 'gsap';
 
 	let firstRef;
 	let lastRef;

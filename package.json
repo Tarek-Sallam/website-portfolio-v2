@@ -32,6 +32,7 @@
 	"dependencies": {
 		"@threlte/core": "^6.0.4",
 		"@threlte/extras": "^5.2.0",
+		"gsap": "^3.12.2",
 		"three": "^0.155.0"
 	}
 }
