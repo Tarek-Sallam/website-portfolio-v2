@@ -22,6 +22,7 @@
 
 	onMount(() => {
 		const scene = new THREE.Scene();
+		const dist = 5;
 		const camera = new THREE.PerspectiveCamera(
 			75,
 			window.innerWidth / window.innerHeight,
@@ -36,7 +37,7 @@
 		const loader = new GLTFLoader();
 		loader.load('./models/modifiedSphere.gltf', function (gltf) {
 			const outerSphere = gltf.scene.children[0];
-			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.5, color: 'blue' });
+			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.6, color: 'blue' });
 			outerSphere.material = outerSphereMaterial;
 			outerSphere.rotation.set(-Math.PI * 1.5, 0, 0);
 			outerSphere.position.set(0, 0, 0);
@@ -62,7 +63,7 @@
 			}
 		};
 
-		const weirdSphere = new THREE.IcosahedronGeometry(1, 20);
+		const weirdSphere = new THREE.IcosahedronGeometry(1, 30);
 		const weirdMaterial = new THREE.ShaderMaterial({
 			vertexShader: vertexShader,
 			fragmentShader: fragmentShader,
@@ -72,7 +73,7 @@
 
 		scene.add(weirdMesh);
 
-		camera.position.z = 5;
+		camera.position.z = dist;
 
 		let light = new THREE.PointLight(0xffffff, 2, 1000, 0);
 		light.position.set(3.8, 0, -1.75);
@@ -98,7 +99,6 @@
 		light.position.set(3.6, -0.65, -1.75);
 		scene.add(light);
 
-		console.log(scene);
 		const composer = new EffectComposer(renderer);
 
 		const renderPass = new RenderPass(scene, camera);
@@ -136,6 +136,11 @@
 			uniforms.uTime.value += 0.01;
 			uniforms.uMouse.value.x += (mouse.x - uniforms.uMouse.value.x) * 0.075;
 			uniforms.uMouse.value.y += (mouse.y - uniforms.uMouse.value.y) * 0.075;
+			camera.position.x += (mouse.x / 2 - camera.position.x) * 0.05;
+			camera.position.y += (mouse.y / 2 - camera.position.y) * 0.05;
+			let XY = new THREE.Vector2(camera.position.x, camera.position.y);
+			camera.position.z = dist * Math.sin(Math.acos(XY.length() / dist));
+			camera.lookAt(0, 0, 0);
 			composer.render();
 		}
 
