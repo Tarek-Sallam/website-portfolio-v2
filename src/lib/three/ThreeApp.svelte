@@ -45,6 +45,7 @@
 			scene.add(outerSphere);
 		});
 
+		// uniforms (object with values) to pass into shader -> contains mouse, color, time, and sway scale and speed
 		let uniforms = {
 			uTime: {
 				value: 0.0
@@ -63,18 +64,26 @@
 			}
 		};
 
+		// create the sphere
 		const weirdSphere = new THREE.IcosahedronGeometry(1, 30);
+
+		// create the material and load the vertex and fragment shader with the uniforms object
 		const weirdMaterial = new THREE.ShaderMaterial({
 			vertexShader: vertexShader,
 			fragmentShader: fragmentShader,
 			uniforms: uniforms
 		});
+
+		// create the mesh and load the material and sphere created above
 		const weirdMesh = new THREE.Mesh(weirdSphere, weirdMaterial);
 
+		// add the mesh to the scene
 		scene.add(weirdMesh);
 
+		// set the camera position in z direction to dist variable above
 		camera.position.z = dist;
 
+		// create the lights and add it to the scene one by one
 		let light = new THREE.PointLight(0xffffff, 2, 1000, 0);
 		light.position.set(3.8, 0, -1.75);
 		scene.add(light);
@@ -99,18 +108,26 @@
 		light.position.set(3.6, -0.65, -1.75);
 		scene.add(light);
 
+		// create a new effect composer
 		const composer = new EffectComposer(renderer);
 
+		// create a new renderPass
 		const renderPass = new RenderPass(scene, camera);
 
+		// create a new FXAA shader pass
 		const fxaaPass = new ShaderPass(FXAAShader);
 
+		// create a new output pass
 		const outputPass = new OutputPass();
 
+		// get the pixel ratio of the renderer
 		const pixelRatio = renderer.getPixelRatio();
+
+		// fxaa config settings
 		fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.offsetWidth * pixelRatio);
 		fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
 
+		// bloom pass after configuration
 		const bloomPassAfter = new UnrealBloomPass(
 			new THREE.Vector2(window.innerWidth, window.innerHeight),
 			0.4,
@@ -118,12 +135,14 @@
 			0.1
 		);
 
+		// bloom pass before configuration
 		const bloomPassBefore = new UnrealBloomPass(
 			new THREE.Vector2(window.innerWidth, window.innerHeight),
 			0.05,
 			0.01,
 			0.2
 		);
+
 		// adding passes to composer
 		composer.addPass(renderPass);
 		composer.addPass(fxaaPass);
@@ -131,6 +150,7 @@
 		composer.addPass(outputPass);
 		composer.addPass(bloomPassAfter);
 
+		// animation loop
 		function animate() {
 			requestAnimationFrame(animate);
 			uniforms.uTime.value += 0.01;
