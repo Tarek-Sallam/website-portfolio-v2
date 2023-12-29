@@ -29,6 +29,18 @@
 			0.1,
 			1000
 		);
+
+		const red = [1.2, 0.2, 0.2];
+		const blue = [0.2, 0.3, 1];
+		const orange = [1, 0.3, 0.15];
+		const green = [0.2, 0.75, 0.25];
+		const purple = [0.3, 0.25, 1];
+		const pink = [0.65, 0.2, 0.6];
+		const colorOptions = [red, blue, orange, green, purple, pink];
+		const colorIndex = Math.floor(Math.random() * colorOptions.length);
+		const RGB = colorOptions[colorIndex];
+		const color = new THREE.Color(...RGB);
+
 		const renderer = new THREE.WebGLRenderer();
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(window.innerWidth, window.innerHeight);
@@ -37,7 +49,7 @@
 		const loader = new GLTFLoader();
 		loader.load('./models/modifiedSphere.gltf', function (gltf) {
 			const outerSphere = gltf.scene.children[0];
-			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.8, color: 'blue' });
+			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.8, color: color });
 			outerSphere.material = outerSphereMaterial;
 			outerSphere.rotation.set(-Math.PI * 1.5, 0, 0);
 			outerSphere.position.set(0, 0, 0);
@@ -54,7 +66,7 @@
 				value: new THREE.Vector2(0, 0)
 			},
 			uColor: {
-				value: new THREE.Vector3(0.2, 0.3, 1.0)
+				value: new THREE.Vector3(...RGB)
 			},
 			uSwayScale: {
 				value: 0.05
@@ -84,11 +96,11 @@
 		camera.position.z = dist;
 
 		// create the lights and add it to the scene one by one
-		let light = new THREE.PointLight(0xffffff, 2, 1000, 0);
+		let light = new THREE.PointLight(color, 2, 1000, 0);
 		light.position.set(3.8, 0, -1.75);
 		scene.add(light);
 
-		light = new THREE.PointLight(0xffffff, 2, 1000, 0);
+		light = new THREE.PointLight(color, 2, 1000, 0);
 		light.position.set(-3.8, 0, -1.75);
 		scene.add(light);
 
