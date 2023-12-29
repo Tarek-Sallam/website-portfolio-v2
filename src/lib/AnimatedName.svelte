@@ -3,15 +3,8 @@
 	import './css/AnimatedName.css';
 	import { gsap } from 'gsap';
 
-	//HTML element refs
-	let firstRef;
-	let lastRef;
-
-	let firstWrapperRef;
-	let lastWrapperRef;
-
-	let firstSelectedRef;
-	let lastSelectedRef;
+	let firstNamesRef = [];
+	let lastNamesRef = [];
 
 	let tlFirstRef;
 	let tlLastRef;
@@ -20,8 +13,38 @@
 	let extraFirstNames = [];
 	let extraLastNames = [];
 
-	const spacingRelative = 0.1;
+	const spacing = 0.1;
 	const duration = 20;
+
+	$: {
+		console.log(firstNamesRef);
+		console.log(lastNamesRef);
+
+		if (firstNamesRef.length > 3 && lastNamesRef.length > 3) {
+			const firstProps = {
+				children: firstNamesRef,
+				direction: 1,
+				spacing: spacing * window.innerWidth,
+				width: firstNamesRef[1].offsetWidth
+			};
+
+			const lastProps = {
+				children: lastNamesRef,
+				direction: -1,
+				spacing: spacing * window.innerWidth,
+				width: lastNamesRef[1].offsetWidth
+			};
+
+			firstProps['starts'] = getStarts(firstProps);
+			lastProps['starts'] = getStarts(lastProps);
+			firstProps['duration'] = duration;
+			lastProps['duration'] = duration;
+
+			tlFirstRef = animateNames(firstProps);
+			tlLastRef = animateNames(lastProps);
+		}
+	}
+
 	// get the number of names algorithm
 	function getNumberOfNames(width) {
 		let count = 1;
@@ -63,8 +86,7 @@
 		return [extraFirstNames, extraLastNames];
 	}
 
-	function getStarts({ container, direction, spacing, width }) {
-		const children = container.children;
+	function getStarts({ children, direction, spacing, width }) {
 		const viewport = window.innerWidth;
 		const remaining = width - viewport; // text minus width of viewport
 		const start = direction === 1 ? viewport : -width; // the start depending on direction
@@ -96,7 +118,7 @@
 
 	function animateNames({
 		// PROPS
-		container,
+		children,
 		duration,
 		direction,
 		spacing,
@@ -104,7 +126,6 @@
 		classN,
 		starts
 	}) {
-		const children = container.children;
 		const viewport = window.innerWidth;
 		const start = direction === 1 ? viewport : -width;
 		const end = direction === 1 ? -width : viewport; // find end point
@@ -178,31 +199,9 @@
 
 	// on window resize
 	function handleResize() {
-		const spacing = spacingRelative * window.innerWidth;
-		const numFirstNames = getNumberOfNames(firstRef.offsetWidth);
-		const numLastNames = getNumberOfNames(lastRef.offsetWidth);
+		const numFirstNames = getNumberOfNames(firstNamesRef[1].offsetWidth);
+		const numLastNames = getNumberOfNames(lastNamesRef[1].offsetWidth);
 		[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
-
-		const firstProps = {
-			container: firstWrapperRef,
-			direction: 1,
-			spacing: spacing,
-			width: firstRef.offsetWidth
-		};
-		const lastProps = {
-			container: lastWrapperRef,
-			direction: -1,
-			spacing: spacing,
-			width: lastRef.offsetWidth
-		};
-
-		firstProps['starts'] = getStarts(firstProps);
-		lastProps['starts'] = getStarts(lastProps);
-		firstProps['duration'] = duration;
-		lastProps['duration'] = duration;
-
-		animateNames(firstProps);
-		animateNames(lastProps);
 	}
 
 	// on mount set names using resize handle
@@ -214,18 +213,18 @@
 <svelte:window on:resize={handleResize} />
 
 <div class="name-container">
-	<span class="name-wrapper" bind:this={firstWrapperRef}>
-		<p class="overlay first-name">TAREK</p>
-		<p bind:this={firstRef} class="outline first-name">TAREK</p>
-		{#each extraFirstNames as name}
-			<p class={name.classes}>TAREK</p>
+	<span class="name-wrapper">
+		<p bind:this={firstNamesRef[0]} class="overlay first-name">TAREK</p>
+		<p bind:this={firstNamesRef[1]} class="outline first-name">TAREK</p>
+		{#each extraFirstNames as name, index}
+			<p class={name.classes} bind:this={firstNamesRef[index + 2]}>TAREK</p>
 		{/each}
 	</span>
-	<span class="name-wrapper" bind:this={lastWrapperRef}>
-		<p class="overlay last-name">SALLAM</p>
-		<p bind:this={lastRef} class="outline last-name">SALLAM</p>
-		{#each extraLastNames as name}
-			<p class={name.classes}>SALLAM</p>
+	<span class="name-wrapper">
+		<p bind:this={lastNamesRef[0]} class="overlay last-name">SALLAM</p>
+		<p bind:this={lastNamesRef[1]} class="outline last-name">SALLAM</p>
+		{#each extraLastNames as name, index}
+			<p class={name.classes} bind:this={lastNamesRef[index + 2]}>SALLAM</p>
 		{/each}
 	</span>
 </div>
