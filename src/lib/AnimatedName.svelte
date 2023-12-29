@@ -3,13 +3,32 @@
 	import './css/AnimatedName.css';
 	import gsap from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+	import animateNames from './functions/animateNames';
+	import getStarts from './functions/getStarts';
 
 	let firstNamesRef = [];
 	let lastNamesRef = [];
 
 	let tlFirstRef;
 	let tlLastRef;
-	let masterTl = gsap.timeline();
+	let tlLooping;
+
+	let timeoutId;
+	let timeoutId2;
+
+	const debounce = function (func, delay) {
+		if (timeoutId) {
+			window.clearTimeout(timeoutId);
+		}
+		timeoutId = window.setTimeout(func, delay);
+	};
+
+	const debounce2 = function (func, delay) {
+		if (timeoutId2) {
+			window.clearTimeout(timeoutId2);
+		}
+		timeoutId2 = window.setTimeout(func, delay);
+	};
 
 	// list of names that will be added and dynamically changed on resize
 	let extraFirstNames = [];
@@ -17,32 +36,6 @@
 
 	const spacing = 0.05;
 	const duration = 20;
-
-	$: {
-		if (firstNamesRef.length > 3 && lastNamesRef.length > 3) {
-			const firstProps = {
-				children: firstNamesRef,
-				direction: 1,
-				spacing: spacing * window.innerWidth,
-				width: firstNamesRef[1].offsetWidth
-			};
-
-			const lastProps = {
-				children: lastNamesRef,
-				direction: -1,
-				spacing: spacing * window.innerWidth,
-				width: lastNamesRef[1].offsetWidth
-			};
-
-			firstProps['starts'] = getStarts(firstProps);
-			lastProps['starts'] = getStarts(lastProps);
-			firstProps['duration'] = duration;
-			lastProps['duration'] = duration;
-
-			tlFirstRef = animateNames(firstProps);
-			tlLastRef = animateNames(lastProps);
-		}
-	}
 
 	// get the number of names algorithm
 	function getNumberOfNames(width) {
@@ -85,131 +78,75 @@
 		return [extraFirstNames, extraLastNames];
 	}
 
-	function getStarts({ children, direction, spacing, width }) {
-		const viewport = window.innerWidth;
-		const remaining = width - viewport; // text minus width of viewport
-		const start = direction === 1 ? viewport : -width; // the start depending on direction
-		let starts = [];
-		starts[0] = direction === 1 ? 0 : -remaining;
-		gsap.set(children[0], { x: starts[0] });
-		gsap.set(children[1], { x: starts[0] });
-		for (let i = 1; i < children.length / 2; i++) {
-			if (direction === 1) {
-				if (starts[i - 1] + width + spacing < viewport) {
-					starts[i] = starts[i - 1] + width + spacing;
-				} else {
-					starts[i] = start;
-				}
-			} else if (direction === -1) {
-				if (starts[i - 1] - spacing > 0) {
-					starts[i] = starts[i - 1] - width - spacing;
-				} else {
-					starts[i] = start;
-				}
-			}
-
-			// set position to the current starting position
-			gsap.set(children[i * 2], { x: starts[i] });
-			gsap.set(children[i * 2 + 1], { x: starts[i] });
-		}
-		return starts;
-	}
-
-	function animateNames({
-		// PROPS
-		children,
-		duration,
-		direction,
-		spacing,
-		width,
-		classN,
-		starts
-	}) {
-		const viewport = window.innerWidth;
-		const start = direction === 1 ? viewport : -width;
-		const end = direction === 1 ? -width : viewport; // find end point
-		const distance = width + viewport; // distance needed to travel
-		const overflow = width * (children.length / 2 - 1) - viewport; // overflow distance of children and viewport
-		const repeatWait = (overflow / distance) * duration; // the delay time between repeating
-		const spacingDuration = (spacing / distance) * duration; // duration that takes into account spacing
-		const tl = gsap.timeline(); // reference to timeline
-
-		// if there isn't more than 1 child
-		if (children.length < 4) {
-			return;
-		}
-
-		// initial for loop (for all the elements before the last one)
-		for (let i = 0; i < children.length / 2 - 1; i++) {
-			// calculate initial duration
-			const initDuration = (Math.abs(end - starts[i]) / distance) * duration;
-
-			// animation
-			tl.to(
-				// select the current iteration items
-				[children[i * 2], children[i * 2 + 1]],
-				{
-					x: end, // animate to end
-					ease: 'none', // no ease for linear animation
-					duration: initDuration, // use initial duration
-
-					// ON COMPLETE: set the selected elements to the starting position
-					onComplete: function () {
-						gsap.set([children[i * 2], children[i * 2 + 1]], {
-							x: start
-						});
-					}
-				},
-				'<' // start at beginning of previous animation
-			);
-		}
-
-		// last element animation (starts offscreen)
-		tl.to(
-			[children[children.length - 2], children[children.length - 1]],
-			{
-				x: end,
-				ease: 'none',
-				duration: duration,
-				repeat: -1, // repeat infinitely
-
-				// calculatethe proper repeat delay including the spacing
-				repeatDelay: repeatWait + (children.length / 2) * spacingDuration
-			},
-			'<' + (repeatWait + (children.length / 2 - 1) * spacingDuration) // start after previous animation plus delay and spacing delay
-		);
-
-		for (let j = 0; j < children.length / 2 - 1; j++) {
-			tl.to(
-				[children[j * 2], children[j * 2 + 1]],
-				{
-					x: end,
-					ease: 'none',
-					duration: duration,
-					repeat: -1,
-					repeatDelay: repeatWait + (children.length / 2) * spacingDuration
-				},
-				'<' + ((width / distance) * duration + spacingDuration)
-			);
-		}
-
-		return tl;
-	}
-
 	// on window resize
-	function handleResize() {
-		const numFirstNames = getNumberOfNames(firstNamesRef[1].offsetWidth);
-		const numLastNames = getNumberOfNames(lastNamesRef[1].offsetWidth);
-		[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
+	function handleResize(callback) {
+		debounce(function () {
+			console.log('resized');
+			const numFirstNames = getNumberOfNames(firstNamesRef[1].offsetWidth);
+			const numLastNames = getNumberOfNames(lastNamesRef[1].offsetWidth);
+			[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
+			callback();
+		}, 250);
 	}
 
-	function handleEnter() {}
+	function resizeCallback() {
+		debounce2(function () {
+			console.log('callback');
+			if (firstNamesRef.length > 3 && lastNamesRef.length > 3) {
+				if (tlFirstRef) {
+					tlFirstRef.kill();
+				}
+				if (tlLastRef) {
+					tlLastRef.kill();
+				}
+				tlLooping.clear();
 
-	function handleLeaveBack() {}
+				firstNamesRef = firstNamesRef.filter(Boolean);
+				lastNamesRef = lastNamesRef.filter(Boolean);
+
+				console.log(firstNamesRef);
+				console.log(lastNamesRef);
+				const firstProps = {
+					children: firstNamesRef,
+					direction: 1,
+					spacing: spacing * window.innerWidth,
+					width: firstNamesRef[1].offsetWidth
+				};
+
+				const lastProps = {
+					children: lastNamesRef,
+					direction: -1,
+					spacing: spacing * window.innerWidth,
+					width: lastNamesRef[1].offsetWidth
+				};
+
+				firstProps['starts'] = getStarts(firstProps);
+				lastProps['starts'] = getStarts(lastProps);
+				firstProps['duration'] = duration;
+				lastProps['duration'] = duration;
+
+				tlFirstRef = animateNames(firstProps);
+				tlLastRef = animateNames(lastProps);
+
+				tlLooping.add(tlFirstRef);
+				tlLooping.add(tlLastRef, '<');
+			}
+		}, 100);
+	}
+
+	function handleEnter() {
+		// PAUSE
+	}
+
+	function handleLeaveBack() {
+		// PLAY
+	}
 
 	// on mount set names using resize handle
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
+		tlLooping = gsap.timeline();
+		/*
 		ScrollTrigger.create({
 			start: 0.5 * window.innerHeight,
 			onEnter: function () {
@@ -218,14 +155,19 @@
 			onLeaveBack: function () {
 				handleLeaveBack();
 			}
-		});
+		}); */
 		const numFirstNames = getNumberOfNames(firstNamesRef[1].offsetWidth);
 		const numLastNames = getNumberOfNames(lastNamesRef[1].offsetWidth);
 		[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
+		resizeCallback();
 	});
 </script>
 
-<svelte:window on:resize={handleResize} />
+<svelte:window
+	on:resize={function () {
+		handleResize(resizeCallback);
+	}}
+/>
 
 <div class="name-container">
 	<span class="name-wrapper">
