@@ -13,6 +13,9 @@
 	let firstSelectedRef;
 	let lastSelectedRef;
 
+	let tlFirstRef;
+	let tlLastRef;
+
 	// list of names that will be added and dynamically changed on resize
 	let extraFirstNames = [];
 	let extraLastNames = [];
@@ -124,7 +127,7 @@
 			// animation
 			tl.to(
 				// select the current iteration items
-				container.querySelectorAll('.' + classN + (i + 1)),
+				[children[i * 2], children[i * 2 + 1]],
 				{
 					x: end, // animate to end
 					ease: 'none', // no ease for linear animation
@@ -132,7 +135,7 @@
 
 					// ON COMPLETE: set the selected elements to the starting position
 					onComplete: function () {
-						gsap.set(container.querySelectorAll('.' + classN + (i + 1)), {
+						gsap.set([children[i * 2], children[i * 2 + 1]], {
 							x: start
 						});
 					}
@@ -143,7 +146,7 @@
 
 		// last element animation (starts offscreen)
 		tl.to(
-			container.querySelectorAll('.' + classN + children.length / 2),
+			[children[children.length - 2], children[children.length - 1]],
 			{
 				x: end,
 				ease: 'none',
@@ -158,7 +161,7 @@
 
 		for (let j = 0; j < children.length / 2 - 1; j++) {
 			tl.to(
-				container.querySelectorAll('.' + classN + (j + 1)),
+				[children[j * 2], children[j * 2 + 1]],
 				{
 					x: end,
 					ease: 'none',
