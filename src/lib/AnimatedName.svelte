@@ -1,25 +1,24 @@
 <script>
 	import { onMount } from 'svelte';
 	import './css/AnimatedName.css';
-	import { gsap } from 'gsap';
+	import gsap from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 	let firstNamesRef = [];
 	let lastNamesRef = [];
 
 	let tlFirstRef;
 	let tlLastRef;
+	let masterTl = gsap.timeline();
 
 	// list of names that will be added and dynamically changed on resize
 	let extraFirstNames = [];
 	let extraLastNames = [];
 
-	const spacing = 0.1;
+	const spacing = 0.05;
 	const duration = 20;
 
 	$: {
-		console.log(firstNamesRef);
-		console.log(lastNamesRef);
-
 		if (firstNamesRef.length > 3 && lastNamesRef.length > 3) {
 			const firstProps = {
 				children: firstNamesRef,
@@ -204,9 +203,25 @@
 		[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
 	}
 
+	function handleEnter() {}
+
+	function handleLeaveBack() {}
+
 	// on mount set names using resize handle
 	onMount(() => {
-		handleResize();
+		gsap.registerPlugin(ScrollTrigger);
+		ScrollTrigger.create({
+			start: 0.5 * window.innerHeight,
+			onEnter: function () {
+				handleEnter();
+			},
+			onLeaveBack: function () {
+				handleLeaveBack();
+			}
+		});
+		const numFirstNames = getNumberOfNames(firstNamesRef[1].offsetWidth);
+		const numLastNames = getNumberOfNames(lastNamesRef[1].offsetWidth);
+		[extraFirstNames, extraLastNames] = setNamesList(numFirstNames, numLastNames);
 	});
 </script>
 
