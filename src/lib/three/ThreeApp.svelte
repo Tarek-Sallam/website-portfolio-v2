@@ -37,7 +37,7 @@
 		const loader = new GLTFLoader();
 		loader.load('./models/modifiedSphere.gltf', function (gltf) {
 			const outerSphere = gltf.scene.children[0];
-			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.6, color: 'blue' });
+			const outerSphereMaterial = new THREE.MeshStandardMaterial({ roughness: 0.8, color: 'blue' });
 			outerSphere.material = outerSphereMaterial;
 			outerSphere.rotation.set(-Math.PI * 1.5, 0, 0);
 			outerSphere.position.set(0, 0, 0);
@@ -127,32 +127,22 @@
 		fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.offsetWidth * pixelRatio);
 		fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
 
-		// bloom pass after configuration
-		const bloomPassAfter = new UnrealBloomPass(
-			new THREE.Vector2(window.innerWidth, window.innerHeight),
-			0.4,
-			2,
-			0.1
-		);
-
 		// bloom pass before configuration
-		const bloomPassBefore = new UnrealBloomPass(
-			new THREE.Vector2(window.innerWidth, window.innerHeight),
-			0.05,
-			0.01,
-			0.2
+		const bloomPass = new UnrealBloomPass(
+			new THREE.Vector3(window.innerWidth, window.innerHeight),
+			0.8,
+			0.1,
+			0
 		);
 
 		// adding passes to composer
 		composer.addPass(renderPass);
+		composer.addPass(bloomPass);
 		composer.addPass(fxaaPass);
-		composer.addPass(bloomPassBefore);
 		composer.addPass(outputPass);
-		composer.addPass(bloomPassAfter);
 
 		// animation loop
 		function animate() {
-			requestAnimationFrame(animate);
 			uniforms.uTime.value += 0.01;
 			uniforms.uMouse.value.x += (mouse.x - uniforms.uMouse.value.x) * 0.075;
 			uniforms.uMouse.value.y += (mouse.y - uniforms.uMouse.value.y) * 0.075;
@@ -161,6 +151,7 @@
 			let XY = new THREE.Vector2(camera.position.x, camera.position.y);
 			camera.position.z = dist * Math.sin(Math.acos(XY.length() / dist));
 			camera.lookAt(0, 0, 0);
+			requestAnimationFrame(animate);
 			composer.render();
 		}
 
