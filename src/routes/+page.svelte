@@ -5,4 +5,3 @@
 
 <ThreeApp />
 <AnimatedName />
-<div><h1 class="test">TESTT</h1></div>
