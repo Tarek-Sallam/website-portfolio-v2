@@ -77,7 +77,7 @@
 		};
 
 		// create the sphere
-		const weirdSphere = new THREE.IcosahedronGeometry(1, 30);
+		const weirdSphere = new THREE.IcosahedronGeometry(1, 20);
 
 		// create the material and load the vertex and fragment shader with the uniforms object
 		const weirdMaterial = new THREE.ShaderMaterial({
