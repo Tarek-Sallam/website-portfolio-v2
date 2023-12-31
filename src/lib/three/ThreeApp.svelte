@@ -12,23 +12,30 @@
 	import fragmentShader from './shaders/fragment.glsl';
 	import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+	import debounce from '../functions/debounce';
 	let container;
 	let mouse = { x: 0, y: 0 };
+	let uniforms = {};
+	let camera;
+	let composer;
+	let renderer;
+	const dist = 5;
 
 	function handleMouseMove(e) {
 		mouse.x = (e.x / window.innerWidth) * 2 - 1;
 		mouse.y = ((window.innerHeight - e.y) / window.innerHeight) * 2 - 1;
 	}
 
-	onMount(() => {
+	const handleResize = debounce(() => {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}, 250);
+
+	function initScene() {
 		const scene = new THREE.Scene();
-		const dist = 5;
-		const camera = new THREE.PerspectiveCamera(
-			75,
-			window.innerWidth / window.innerHeight,
-			0.1,
-			1000
-		);
+
+		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 		const red = [1.2, 0.2, 0.2];
 		const blue = [0.2, 0.3, 1];
@@ -41,7 +48,7 @@
 		const RGB = colorOptions[colorIndex];
 		const color = new THREE.Color(...RGB);
 
-		const renderer = new THREE.WebGLRenderer();
+		renderer = new THREE.WebGLRenderer();
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -58,7 +65,7 @@
 		});
 
 		// uniforms (object with values) to pass into shader -> contains mouse, color, time, and sway scale and speed
-		let uniforms = {
+		uniforms = {
 			uTime: {
 				value: 0.0
 			},
@@ -121,7 +128,7 @@
 		scene.add(light);
 
 		// create a new effect composer
-		const composer = new EffectComposer(renderer);
+		composer = new EffectComposer(renderer);
 
 		// create a new renderPass
 		const renderPass = new RenderPass(scene, camera);
@@ -152,7 +159,10 @@
 		composer.addPass(bloomPass);
 		composer.addPass(fxaaPass);
 		composer.addPass(outputPass);
+	}
 
+	onMount(() => {
+		initScene();
 		// animation loop
 		function animate() {
 			uniforms.uTime.value += 0.01;
@@ -172,4 +182,4 @@
 </script>
 
 <div class="canvas-container" bind:this={container} />
-<svelte:window on:mousemove={handleMouseMove} />
+<svelte:window on:resize={handleResize} on:mousemove={handleMouseMove} />
